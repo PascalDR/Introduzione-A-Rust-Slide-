@@ -1,0 +1,593 @@
+<!doctype html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+		<title>Introduzione a Rust</title>
+
+		<link rel="stylesheet" href="css/reset.css">
+		<link rel="stylesheet" href="css/reveal.css">
+		<link rel="stylesheet" href="css/theme/blood.css">
+
+		<link rel="stylesheet" href="lib/css/monokai.css">
+
+		<script>
+			var link = document.createElement( 'link' );
+			link.rel = 'stylesheet';
+			link.type = 'text/css';
+			link.href = window.location.search.match( /print-pdf/gi ) ? 'css/print/pdf.css' : 'css/print/paper.css';
+			document.getElementsByTagName( 'head' )[0].appendChild( link );
+		</script>
+	</head>
+	<body>
+		<div class="reveal">
+			<div class='footer'>
+				Introduzione a Rust - Linux Day 2019 <a rel="license" href="http://creativecommons.org/licenses/by-nc/4.0/"><img alt="Licenza Creative Commons" style="border-width:0" src="https://i.creativecommons.org/l/by-nc/4.0/88x31.png" /></a> 
+			</div>
+			<div class='rust_logo'>
+				<img alt="Rust Logo" style="border-width:0" src="images/w2BGaKDl_400x400.png" />
+			</div>
+			<div class="slides">
+				<section><h3>Rust introduzione al linguaggio</h3></section>
+				<section>
+					<section>C'era una volta, in una piccola rete di computer, un piccolo programmino con all'interno un allegro puntatorino a void chiamato Bobbit.</section>
+					<section>Nessuno si ricordava da quando Bobbit fosse lì o perché il suo allegro programmatore, Calogero, lo avesse dichiarato visto che in 500K di linee di codice non c'era nemmeno l'accenno di un commento.</section>
+					<section>Però quel piccolo puntatore nascondeva un segreto...</section>
+					<section>Un giorno Agostino, lo stagista, decise di riutilizzare quel puntatore che stava lì solo soletto e che nessuno utilizzava.<br>Così dopo un free(Bobbit) e un Bobbit = malloc(sizeof(uint)*10) lo stagista riutilizzò con successo il nostro amato puntatore.</section>
+					<section>Fine<p class="fragment">?</p></section>
+					<section>Peccato che quel puntatorino, in un’altra area del codice e con il nome Eunice_aphroditois, puntasse a una variabile essenziale al funzionamento del programma che veniva letta ad intervalli da un thread.</section>
+					<section>E una volta eseguito il programma e arrivati alla lettura di Eunice_aphroditois...</section>
+					<section>Sintesi della lettura di Eunice_aphroditois:<br><div style='position:relative; padding-bottom:calc(56.15% + 44px)'><iframe src='https://gfycat.com/ifr/ImpossibleRegalDarklingbeetle' frameborder='0' scrolling='no' width='100%' height='100%' style='position:absolute;top:0;left:0;' allowfullscreen></iframe></div><p> <a href="https://gfycat.com/impossibleregaldarklingbeetle">via Gfycat</a></p></section>
+				</section>
+				<section>
+					<section><h3>Cos'è Rust:</h3></section>
+					<section>
+						Rust è un linguaggio di programmazione multiparadigma (concorrente, generico, imperativo, strutturato e funzionale), usato principalmente per applicazioni di sistema, che ha come principale obbiettivo quello di essere memory safety.
+					</section>
+					<section><h3>La storia di Rust:</h3></section>
+					<section>
+						Nasce dalla mente di <a href="https://github.com/graydon">Graydon Hoare</a> nel 2006 come progetto personale con lo scopo di creare un linguaggio di programmazione che prevenisse i casi accessi invalidi alla memoria che generavano i mai troppo amati segmentation fault.<br>
+						Mozilla si interesso al progetto nel 2009, supportandolo a tutti gli effetti, e venne annunciato ufficialmente al mondo nel 2010.<br>
+						Nello stesso anno venne annunciata la riscrittura del compilatore, inizialmente programmato in Ocaml, in Rust stesso utilizzando come back end LLVM.
+					</section>
+				</section>
+				<section>
+					<h3>Quindi... Perché usare proprio Rust?</h3>
+				</section>
+				<section>
+					<section>
+						<h3>Affidabilità</h3><br>
+						Il modello di ownership ed il ricco type system di Rust garantiscono, allo stesso tempo, sicurezza e affidabilità nella gestione della memoria e dei thread e ti permette inoltre di eliminare numerosi bug prevedibili già in fase di compilazione.
+					</section>
+					<section>
+						<h3>Bobbit nel dettaglio</h3>
+					</section>
+					<section>
+						<p>
+							Quello che rende veramente pericoloso Bobbit è:
+							<ul>
+								<li><b>Alias o puntatori:</b> Quando una risorsa referenziata più volte</li>
+								<li><b>Mutabilità:</b> Quando chiunque nel programma può mutare una variabile</li>
+							</ul>
+						</p>
+						<p class="fragment">Per cui, come risolve questi problemi Rust senza avere un Garbage Collector?</p>
+					</section>
+					<section>
+						<h3>Mutability:</h3><br>
+						Il compilatore Rust effettua dei controlli sulle variabili e su quello che gli accade per verificare che la variabili non siano state mutatate per errore.<br>
+						Per questo le variabili vanno marcate mutabili quando sappiamo che verranno mutate nel corso del programma.
+					</section>
+					<section>
+						<h3>L'esempio della macchina da scrivere</h3>
+						<img src="images/SnoopyDarkStormy.jpg">
+					</section>
+					<section>
+						Non è sempre vero che un valore etichettato come non mutabile non possa cambiare nel corso dell'esecuzione del programma. 
+						<pre><code class="rust" data-trim contenteditable style="font-size: 18px;">
+						let nm_text : String = "".to_string();
+						let mut m_text : String = nm_text;
+						nm_text.push_str("It was a dark and stormy night");
+						</code></pre>
+						Questo codice è valido.
+					</section>
+					<section>
+						<h3>Owneship:</h3><br>
+						Quando una variabile viene passata da uno scope chiamato A a un altro chiamato B la proprietà della variabile passa da A a B. 
+						In questo modo si evita che la stessa variabile sia referenziata più volte.
+					</section>
+					<section>
+						<h3>L'esempio della football gag (Ownership)</h3>
+						<img src="images/1107charlie_brown_lucy_football.jpg">
+					</section>
+					<section>
+						<h3>Borrowing:</h3><br>
+						Quando una variabile viene passata da uno scope chiamato A a un altro chiamato B la proprietà della variabile rimane ad A ma viene data in prestito a B.
+					</section>
+					<section>
+						<h3>L'esempio della football gag (Borrowing)</h3>
+						<img src="images/DRkNEi9W4AAvXl3.jpg">
+					</section>
+					<section>
+						<h4>Come Rust gestisce le variabili</h4>
+						<pre><code class="rust" data-trim contenteditable style="font-size: 18px;">
+						{
+						  let a : i32 = 100;
+						  {
+							let b : i32 = 20;
+							// b viene deallocata qui
+						  }
+						  // a viene deallocata qui
+						}
+						</code></pre>
+					</section>
+					<section>
+						<h4>Le referenze borrowed non sono puntatori!</h4>
+						<pre><code class="rust" data-trim contenteditable style="font-size: 18px;">
+						{
+						  let a : i32 = 100;
+						  let c : &i32;
+						  {
+							let b : i32 = 20;
+							c = &b;
+							// b viene deallocata qui
+							// Errore: b non vive abbastanza
+						  }
+						  // a viene deallocata qui
+						}
+						</code></pre>
+					</section>
+					<section>
+						<h4>
+							Come faccio a salvaguardare una variabile da uno scope a un altro?<br>
+							Cedo la proprietà!
+						</h4>
+						<pre><code class="rust" data-trim contenteditable style="font-size: 18px;">
+						{
+						  let a : i32 = 100;
+						  let c : i32;
+						  {
+						    let b : i32 = 20;
+							c = b;
+							// viene data l'ownership di b allo scope superiore
+							// non posso più utilizzare b in questo scope
+						  }
+						  // a viene deallocata qui
+						  // c viene deallocata qui
+						}
+						</code></pre>
+					</section>
+					<section>
+						<h4>
+							Come faccio a salvaguardare una variabile da uno scope a un altro?<br>
+							Cedo la proprietà!
+						</h4>
+						<pre><code class="rust" data-trim contenteditable style="font-size: 18px;">
+						{
+						  let a : i32 = 100;
+						  let c : i32;
+						  {
+							let b : i32 = 20;
+							c = b;
+							// viene data l'ownership di b allo scope superiore
+							// non posso più utilizzare b in questo scope
+						  }
+						  // a viene deallocata qui
+						  // c viene deallocata qui
+						}
+						</code></pre>
+					</section>
+					<section>
+						<h3>Lifetime:</h3><br>
+						Lo scope proprietario di una variabile può deallocarla in qualsiasi momento lasciando le referenze prese in prestito senza un valore a cui accedere.<br>
+						Per questo motivo Rust aggiunge il concetto di lifetime che determina esattamente la durata della vita di una referenza in modo di dare agli altri scope che la ricevono un valore sempre accesibile.
+					</section>
+					<section>
+						<h3>L'esempio della football gag (Lifetime)</h3>
+						<img src="images/its-the-great-pumpkin-charlie-brown-footbal-gag.png">
+					</section>
+					<section>
+						<h3>Se tutte le referenze hanno un lifetime perchè la funzione "ball_maker_a( ball_type : &mut String ) -> &String" non ha restituito un errore?</h3><br>						
+					</section>
+					<section>
+						<h3>Lifetime Elision</h3>
+						Se la funzione ha come parametro un'unico valore referenziato e ritorna una referenza il compilatore tende ad assegnare automaticamente il lifetime della variabile referenziata passato come parametro a quella ritornata.<br>
+						Quindi:<br>
+						<pre><code class="rust" data-trim contenteditable style="font-size: 18px;">
+							ball_maker_a( ball_type : &mut String ) -> &String
+						</code></pre>
+						Implicitamente diventa:
+						<pre><code class="rust" data-trim contenteditable style="font-size: 18px;">
+							ball_maker_a<'a>( ball_type : &'a mut String ) -> &'a String
+						</code></pre>
+					</section>
+					<section>
+						<h3>Shadowing:</h3><br>
+						<pre><code class="rust" data-trim contenteditable style="font-size: 18px;">
+						{
+							//Alloco a_0
+							let a : i32 = 100;
+							{
+								//Alloco a_1
+								let a : i32 = 20;
+								println!("{}", a); // stampa 20
+								//Dealloco a_1
+							}
+							//Borrowing di a_0 in b
+							let b : &i32 = &a;
+
+							//Alloco a_1
+							let a : i32 = 40;
+							println!("{}", a); // stampa 40
+							println!("{}", b); // stampa 100
+
+							//Dealloco a_0
+							//Dealloco a_1
+						}
+						</code></pre>
+					</section>
+				</section>
+				<section>
+					<section>
+						<h3>Altri concetti chiave del linguaggio</h3>
+					</section>
+					<section>
+						<h3>Anche le strutture di controllo restituiscono un valore</h3>
+						<pre><code class="rust" data-trim contenteditable style="font-size: 18px;">
+						let monster_level : i32 = 10;
+						let monster_level_str : String = if monster_level < 10 {
+							                            "Weak".to_string()
+						                                 } else if monster_level > 10 && monster_level <= 15 {
+                                          "Normal".to_string()
+                                       } else {
+                                          "Strong".to_string()
+                                       }
+						println!("The marine monster is {}", monster_level_str);
+						</code></pre>
+					</section>
+					<section>
+						<h3>Tuple</h3>
+						<pre><code class="rust" data-trim contenteditable style="font-size: 18px;">
+						let monster_proto : (String, i32);
+						monster_proto = ("Bobbit".to_string(), 40);
+						println!("The marine monster {} lives at the depth of {}", monster_proto.0, monster_proto.1);
+						</code></pre>
+					</section>
+					<section>
+						<h3>Struct</h3>
+						<pre><code class="rust" data-trim contenteditable style="font-size: 18px;">
+						struct Marine_Monster{
+						  name:            String,
+						  depth:           u32,
+						  scientific_name: String
+						}
+
+						let bobbit = Marine_Monster{name: "Bobbit", depth: 40, 
+						                            scientific_name: "Eunice aphroditois"};
+						</code></pre>
+					</section>
+					<section>
+						<h3>Impl</h3>
+						<pre><code class="rust" data-trim contenteditable style="font-size: 18px;">
+						impl MarineMonster {
+						  fn new(name: String, depth: u32, scientific_name: String) -> Self {
+						    MarineMonster{name: name, depth: depth, scientific_name: scientific_name}
+						  }
+
+						  fn is_monster(&self) {
+						    println!("{} is an horrible monster!", self.name);
+						  }
+						}
+
+						bobbit.is_monster();
+						</code></pre>
+					</section>
+					<section>
+						<h3>Traits</h3>
+						<pre><code class="rust" data-trim contenteditable style="font-size: 18px;">
+						trait MarineBehaviours{
+						  fn attack(&self, creature: &Sea_Creature);
+						  fn run(&self, creature: &Sea_Creature);
+						}
+						impl MarineBehaviours for MarineMonster {
+						  fn attack(&self, creature: &Sea_Creature){...}
+						  fn run(&self, creature: &Sea_Creature){...}
+						}
+						</code></pre>
+					</section>
+					<section>
+						<h3>Generics</h3>
+						<pre><code class="rust" data-trim contenteditable style="font-size: 18px;">
+						struct Normal_Fish{
+						  name:  String,
+						  depth: u32,
+						}
+						struct MarineFight&lt;T : MarineBehaviours, R : MarineBehaviours&gt;{
+						  creature_a: T,
+						  creature_b: R
+						}
+						let carp = Normal_Fish{name: "Carp", depth: 1};
+						let fight = MarineFight{creature_a: bobbit, creature_b: carp};
+						</code></pre>
+					</section>
+					<section>
+						<h3>Enums</h3>
+						<pre><code class="rust" data-trim contenteditable style="font-size: 18px;">
+						enum MarineType {
+						  FISH(u32),
+						  MONSTER(u32),
+						}
+						
+						let bobbit_level = MarineType::MONSTER(1000);
+						let carp_level   = MarineType::FISH(10);							
+						</code></pre>
+					</section>
+					<section>
+						<h3>Pattern Matching</h3>
+						<pre><code class="rust" data-trim contenteditable style="font-size: 18px;">
+						fn marine_creature_level(creture_name: &String, crature_type: &MarineType){
+						  match creature_type {
+						    MarineType::MONSTER(monster_level) => println!("{} is a horrible monster and his level is {}", creture_name, monster_level),
+						    MarineType::FISH(fish_level) => println!("{} is a normal fish and his level is {}", creture_name, fish_level),
+						  }
+						}							
+						</code></pre>
+					</section>
+					<section>
+						<h3>Option Type</h3>
+						<pre><code class="rust" data-trim contenteditable style="font-size: 18px;">
+						enum Option&lt;T&gt; {
+						  None,
+						  Some(T),
+						}
+						let x = Some(7);
+						let y = None;				
+						</code></pre>
+					</section>
+					<section>
+						<h3>Result Type</h3>
+						<pre><code class="rust" data-trim contenteditable style="font-size: 18px;">
+						enum Result&lt;T, E&gt; {
+						  Ok(T),
+						  Err(E),
+						}
+						let x = Ok(7);
+						let y = Error(“Too bad”);				
+						</code></pre>
+					</section>
+					<section>
+						<h3>Zucchero sintattico per gli errori</h3>
+						<pre><code class="rust" data-trim contenteditable style="font-size: 18px;">
+						fn read_username_from_file() -> Result&lt;String, io::Error&gt; {
+						  let mut f = File::open("username.txt")?;
+						  let mut s = String::new();
+						  f.read_to_string(&mut s)?;
+						  Ok(s)
+						}
+						fn main() {
+						  let x = read_username_from_file();
+						  match x {
+						    Ok( result ) => println!("{}", result),
+						    Err( _ ) => println!("Error!")
+						  }
+						}							
+						</code></pre>
+					</section>
+					<section>
+						<h4>E le classi?</h4>
+						<p class="fragment">"La version 0.2 ha introdotto le classi. La versione 0.3 ha aggiunto alcune funzionalità tra cui i distruttori e il polimorfismo tramite l'uso delle interfacce. In Rust 0.4, i trait sono stati aggiunti come mezzo per fornire l'ereditarietà, le interfacce sono state unificate nei trait e quindi rimosse come funzionalità distinta. Anche le classi sono state rimosse, sostituite da una combinazione di strutture e di implementazioni."<br><small>Fonte: <a href="https://it.wikipedia.org/wiki/Rust_(linguaggio_di_programmazione)">Wikipedia</a></small></p>
+					</section>
+					<section>
+						<h4>E se voglio cambiare qualcosa del linguaggio?</h4>
+						Lo sviluppo di Rust è completamente open infatti chiunque può fare una proposta di cambiamento tramite le RFC (request for comment).<br>
+						Trovi tutte le informazioni su come inoltrare la propria richiesta all'indirizzo <a href="https://rust-lang.github.io/rfcs/">https://rust-lang.github.io/rfcs</a>.
+					</section>
+				</section>
+				<section>
+					<section>
+						<h3>Prestazioni</h3><br>
+						Rust è estremamente veloce ed efficiente nel consumo di memoria: non ha runtime o garbage collector, può essere impiegato in servizi dove le prestazioni sono fondamentali, funziona su dispositivi embedded ed è facile da integrare con altri linguaggi di programmazione.
+					</section>
+					<section>
+						<ul>
+							<li><a href="https://benchmarksgame-team.pages.debian.net/benchmarksgame/fastest/rust-java.html">Rust versus Java</a></li>
+							<li><a href="https://benchmarksgame-team.pages.debian.net/benchmarksgame/fastest/rust-go.html">Rust versus Go</a></li>
+							<li><a href="https://benchmarksgame-team.pages.debian.net/benchmarksgame/fastest/rust-gpp.html">Rust versus C++</a></li>
+						</ul>
+					</section>
+				</section>
+				<section>	
+					<section>
+						<h3>Produttività</h3><br>
+						"Rust ha una documentazione eccellente, un compilatore con messaggi di errore utili e strumenti di alto livello come un package manager integrato, un supporto evoluto per molteplici editor con completamento automatico e type inspection, uno strumento per la formattazione automatica del codice e molto altro."
+					</section>
+					<section>
+						<h3>Tra le funzionalità troviamo</h3><br>
+					</section>
+					<section>
+						<h4>Cargo</h4><br>
+						Cargo è il braccio destro di Rustc infatti permette di svolgere tutti i task di package managment di documentazione e di testing.<br>
+						Per organizzare la build ci basterà aggiungere le crate dipendenti nel file "Cargo.toml" e lanciare il comando:
+						<pre><code class="bash" data-trim contenteditable style="font-size: 18px;">
+							cargo build
+						</code></pre>
+						Per buildare l'eseguibile o la libreria, mentre:
+						<pre><code class="bash" data-trim contenteditable style="font-size: 18px;">
+							cargo run
+						</code></pre>
+						Lancierà la soluzione.
+					</section>
+					<section>
+						<h4>Cargo Doc</h4><br>
+						Il compilatore Rust permette di creare automaticamente la documentazione partendo dai commenti scritti nel codice.
+						Possono essere semplici commenti che iniziano per "///", se all'esterno della funzione, o "//!", se all'interno, o strutturato grazie al Markdown.
+						Una volta completata la scrittura della documentazione si potrà digitare il comando:<br>
+						<pre><code class="bash" data-trim contenteditable style="font-size: 18px;">
+							cargo doc
+						</code></pre>
+						Per produrre la documentazione consultabile da un qualsiasi browser.
+					</section>
+					<section>
+						<h4>Cargo Test</h4><br>
+						Mentre negli altri linguaggi gli unit test vengono implementati tramite framework esterni Rust permette di svolgere i controlli automatici direttamente dal compilatore.<br>
+						Usando delle apposite macro è possibile dichiarare del codice che verrà utilizzato per fare dei test.
+						Basterà lanciare il comando:
+						<pre><code class="bash" data-trim contenteditable style="font-size: 18px;">
+							cargo test
+						</code></pre>
+						Per svolgere i test sul codice.
+					</section>
+				</section>
+				<section>
+					<section>
+						<h3>In che ambiti viene utilizzato Rust?</h3>
+					</section>
+					<section>
+						<h4>Applicazioni di sistema</h4>
+						<ul>
+							<li><b><a href="https://servo.org/">Servo</a></b> Servo is a modern, high-performance browser engine designed for both application and embedded use.</li>
+							<li><b><a href="https://github.com/denoland/deno">Deno</a></b> Deno aims to provide a productive and secure scripting environment for the modern programmer. It is built on top of V8, Rust, and TypeScript. </li>
+							<li><b><a href="https://firecracker-microvm.github.io/">Firecracker</a></b> Firecracker is an open source virtualization technology that is purpose-built for creating and managing secure, multi-tenant container and function-based services.</a></b></li>
+						</ul>
+					</section>
+					<section>
+						<h4>BlockChain:</h4>
+						<ul>
+							<li><b><a href="https://www.nervos.org/">Nervos</a></b> The Nervos Network is an open source public blockchain ecosystem and collection of protocols solving the biggest challenges facing blockchains like Bitcoin and Ethereum today.</li>
+							<li><b><a href="https://www.parity.io/">Parity</a></b> Parity Ethereum's goal is to be the fastest, lightest, and most secure Ethereum client. We are developing Parity Ethereum using the sophisticated and cutting-edge Rust programming language.</li>
+						</ul>
+					</section>
+					<section>
+						<h4>Videogiochi:</h4>
+						<ul>
+							<li><b><a href="https://www.piston.rs/">Piston</a></b> A modular game engine written in Rust.</li>
+							<li><b><a href="https://amethyst.rs/">Amethyst</a></b> Data-driven game engine written in Rust.</li>
+							<li><b><a href="https://ggez.rs/">ggez</a></b> A lightweight game framework for making 2D games with minimum friction.</li>
+							<li><b><a href="https://docs.rs/gdnative/0.6.0/gdnative/">GDNative-rs</a></b> This crate contains high-level wrappers around the Godot game engine's gdnaive API. Some of the types were automatically generated from the engine's JSON API description, and some other types are hand made wrappers around the core C types.</li>
+						</ul>
+					</section>
+					<section>
+						<h4>Backend:</h4>
+						<ul>
+							<li><b><a href="https://rocket.rs/">Roket</a></b> Rocket is a web framework for Rust that makes it simple to write fast, secure web applications without sacrificing flexibility, usability, or type safety.</li>
+							<li><b><a href="https://github.com/actix/actix-web">Actix-Web</a></b> Actix web is a small, pragmatic, and extremely fast rust web framework.</li>
+							<li><b><a href="http://diesel.rs/">Disel</a></b> Diesel is a Safe, Extensible ORM and Query Builder for Rust.</li>
+						</ul>
+					</section>
+					<section>
+						<h4>Frontend (WebAsm):</h4>
+						<ul>
+							<li><b><a href="https://github.com/yewstack/yew/">Yew</a></b> Yew is a modern Rust framework inspired by Elm and React for creating multi-threaded frontend apps with WebAssembly.</li>
+							<li><b><a href="https://seed-rs.org/">Seed</a></b> A Rust framework for creating web apps.</li>
+							<li><b><a href="https://github.com/koute/stdweb/">stdweb</a></b> The goal of this crate is to provide Rust bindings to the Web APIs and to allow a high degree of interoperability between Rust and JavaScript.</li>
+						</ul>
+					</section>
+					<section>
+						<h4>Embedded:</h4>
+						L'ecosistema embedded di Rust si sta evolvendo velocemente e ad oggi il linguaggio supporta le architetture ARM, RISC-V e MIPS e numerosi componenti esterni attraverso le crate di interfaccia.<br>
+						Potete scoprire di più sul mondo dell'embedded all'indirizzo <a href="https://www.rust-lang.org/what/embedded">www.rust-lang.org/what/embedded</a> e sul repo Github <a href="https://github.com/rust-embedded/awesome-embedded-rust">Awesome Embedded Rust</a>.
+					</section>
+					<section>
+						<h4>E l'Artificial Intelligence?</h4>
+						<p class="fragment">
+							L'ecosistema Rust è particolarmente giovane è ha ancora bisogno di crescere prima di eseguire applicazioni così complesse.<br>
+							In primo lugo si è dovuto sopperire alle necessità di alle funzionalità di HPC (High Performance Computing) come <a href="https://blog.rust-lang.org/2019/09/30/Async-await-hits-beta.html">l'async/await</a> e il supporto al <a href="https://docs.rs/simd/0.2.4/simd/">SIMD</a> che sono stati aggiunti al linguaggio solo di recente.<br>
+							Al momento si stanno costruendo le librerie per fornire le strutture fondamentali come <a href="https://docs.rs/ndarray/0.13.0/ndarray/">NDArray-rs</a> e stanno inizando a essere rilasciati i primi bindings ai principali motori di Machine Learning come <a href="https://tensorflow.github.io/rust/tensorflow">TensorFlow</a>.
+						</p>
+					</section>
+					<section>
+						<h4>A che punto siamo nell'ecosistema Rust?</h4>
+						<p class="fragment">
+							Mozilla tiene traccia dello sviluppo dell'ecosistema di Rust sui siti "Are we yet?".<br>
+							Puoi trovare lo stato di molti ambiti sul sito <a href="http://www.arewelearningyet.com/">www.arewelearningyet.com</a>
+						</p>
+					</section>
+				</section>
+				<section>
+					<section>
+						<h3>Chi parla di Rust</h3>
+					</section>
+					<section>
+						<blockquote class="twitter-tweet"><p lang="en" dir="ltr">I&#39;m still completely in the excited-newbie honeymoon phase, but writing Rust code feels very wholesome.</p>&mdash; John Carmack (@ID_AA_Carmack) <a href="https://twitter.com/ID_AA_Carmack/status/1094419108781789184?ref_src=twsrc%5Etfw">February 10, 2019</a></blockquote> <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script> 
+					</section>
+					<section>
+						<h4>Andrea Pessino</h4>
+						<blockquote class="twitter-tweet" data-lang="en"><p lang="en" dir="ltr">It&#39;s finally happening - after &gt;30 years of pro use, 20 of which quite reluctantly, I am officially DONE with C/C++. Only maintenance from now on, everything new will be in <a href="https://twitter.com/rustlang?ref_src=twsrc%5Etfw">@rustlang</a>. THANKS Rust team for refining modern concepts into such a practical, elegant system. I love it.</p>&mdash; Andrea Pessino (@AndreaPessino) <a href="https://twitter.com/AndreaPessino/status/1021532074153394176?ref_src=twsrc%5Etfw">July 23, 2018</a></blockquote><script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
+					</section>
+					<section>
+						<h4>Linus Torvalds</h4>
+						"That's not a new phenomenon at all. We've had the system people who used Modula-2 or Ada, and I have to say Rust looks a lot better than either of those two disasters.<br>
+						I'm not convinced about Rust for an OS kernel (there's a lot more to system programming than the kernel, though), but at the same time there is no question that C has a lot of limitations."<br>
+						<small>Fonte: <a href="https://www.infoworld.com/article/3109150/linux-at-25-linus-torvalds-on-the-evolution-and-future-of-linux.html">Infoworld</a></small>
+					</section>
+					<section>
+						<h4>StackOverflow</h4>
+						<img src="images/Schermata da 2019-10-21 23-32-09.png" />
+					</section>
+				</section>
+				<section>Link di Approfondimento:<br>
+					<ul>
+						<li><a href="https://www.youtube.com/watch?v=79PSagCD_AY">Storia di Rust</a></li>
+						<li><a href="https://www.youtube.com/watch?v=fx_7U3gjQgM">Cos'è un Bobbit</a></li>
+						<li><a href="https://internals.rust-lang.org/t/2019-roadmap-progress/10862/7">Rust 2019 Roadmap</a></li>
+					</ul>
+				</section>
+				<section>
+					<section>
+						<h3>
+							Credi di avere un'infestazione di Bobbit!<br>
+							Who you gonna call?
+						</h3>
+					</section>
+					<section>
+						<h3>Rust Roma</h3>
+						<img src="images/600_459158321.jpeg.png">
+						<img src="images/Rust_Roma_QR.png">
+					</section>
+					<section>
+						<h3>Canale Slack Rust Italia</h3>
+						<img src="images/Rust_Italia_Slack_Qr.png">
+					</section>
+					<section>
+						<h3>Bot Telegram Mozilla Italia</h3>
+						<img src="images/450px-Mozillaitalia.svg.png">
+						<img src="images/Mozilla_Italia_Bot_Qr.png">
+					</section>
+				</section>
+				<section>
+					<h4>Rigraziamenti Speciali:</h4>
+					<ul>
+						<li><a href="https://twitter.com/wolf4ood">Enrico Risa (@wolf4ood)</a></li>
+						<li><a href="https://www.linkedin.com/in/alessandro-cresto-miseroglio-2b9ba584/">Alessandro Cresto Miseroglio (alex179ohm)</a></li>
+						<li><a href="https://github.com/Sonic0Andrea">Andrea Salvatori (IU6FZL)</a></li>
+					</ul>
+				</section>
+				<section>
+					<h4>
+						Chi sono io:<br>
+						Pasquale De Rose (J-Lemon)
+					</h4>
+					<img src="images/IMG-20190918-WA0004.jpg">
+					<img src="images/Linkedin_Profilo_Qr.png">
+					<h4>Profilo Linkedin</h4>
+				</section>
+				<section>
+					<h2>Grazie!</h2>
+				</section>
+			</div>
+		</div>
+
+		<script src="js/reveal.js"></script>
+
+		<script>
+			Reveal.initialize({
+				dependencies: [
+					{ src: 'plugin/markdown/marked.js' },
+					{ src: 'plugin/markdown/markdown.js' },
+					{ src: 'plugin/notes/notes.js', async: true },
+					{ src: 'plugin/highlight/highlight.js', async: true }
+				]
+			});
+		</script>
+	</body>
+</html>
